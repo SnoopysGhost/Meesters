@@ -2,9 +2,7 @@ from flask import Flask
 import jinja2
 from bokeh.embed import components
 from bokeh.plotting import figure, show, gridplot
-from bokeh.io import vform
-from bokeh.models import ColumnDataSource, CustomJS
-from bokeh.models.widgets import Slider
+from bokeh.models import ColumnDataSource
 import sympy as sp
 import numpy as np
 from sympy.abc import x, a
@@ -46,8 +44,6 @@ def callback(source=source):
         y2[i] = f_prime(x_data[i], amp)
     source.trigger('change')
 
-# TODO: fix slider
-#amplitude = Slider(title='Amplitude', start=0, end=10, step=.1, value=5)
 
 
 # Figure plotting function
