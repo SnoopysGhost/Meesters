@@ -5,17 +5,18 @@ from bokeh.plotting import figure, show, gridplot
 from bokeh.models import ColumnDataSource
 import sympy as sp
 import numpy as np
-from sympy.abc import x, a
 
 
 # Defining default amplitude
 default_a = 5
+
 
 # Defining numpy function
 def func(x, a=default_a):
     return x + a * np.sin(x)
 
 # Defining sympy function for differentiation
+x, a = sp.symbols('x a')
 f_x = x**2 + a*sp.sin(x)
 f_x_prime = sp.diff(f_x, x)
 f_prime = sp.lambdify((x, a), f_x_prime, modules='numpy')
@@ -33,38 +34,26 @@ source = ColumnDataSource(data=dict(x=x, y1=y1, y2=y2))
 # Interaction tools
 TOOLS = 'box_select, help, reset, resize'
 
-# Custom callback function for slider
-def callback(source=source):
-    data = source.get('data')
-    amp = cb_obj.get('value')
-    x_data, y1, y2 = data['x'], data['y1'], data['y2']
-
-    for i in range(len(x)):
-        y1[i] = func(x_data[i], amp)
-        y2[i] = f_prime(x_data[i], amp)
-    source.trigger('change')
-
-
 
 # Figure plotting function
 def make_figure():
-    left = figure(tools=TOOLS, width=600, height=400,
-                  x_axis_label='x',
-                  y_axis_label='f(x)')
+    top = figure(tools=TOOLS, width=600, height=400,
+                 x_axis_label='x',
+                 y_axis_label='f(x)')
 
-    left.line('x', 'y1', source=source, line_width=2)
-    left.scatter('x', 'y1', source=source, size=0)
+    top.line('x', 'y1', source=source, line_width=2)
+    top.scatter('x', 'y1', source=source, size=0)
 
-    right = figure(tools=TOOLS, width=600, height=400,
-                   x_axis_label='x',
-                   y_axis_label="f(x)'")
-    right.line('x', 'y2', source=source, alpha=1, line_width=2)
-    right.scatter('x', 'y2', source=source, size=0)
+    bottom = figure(tools=TOOLS, width=600, height=400,
+                    x_axis_label='x',
+                    y_axis_label="f(x)'")
+    bottom.line('x', 'y2', source=source, alpha=1, line_width=2)
+    bottom.scatter('x', 'y2', source=source, size=0)
 
-    p = gridplot([[left], [right]])
+    plot = gridplot([[top], [bottom]])
 
-    show(p)
-    return p
+    show(plot)
+    return plot
 
 
 # Creating Jinja2 HTML template
@@ -108,7 +97,7 @@ p = make_figure()
 # Extracting HTML elements
 script, div = components(p)
 
-#Creating Flask app
+# Creating Flask app
 app = Flask(__name__)
 
 
