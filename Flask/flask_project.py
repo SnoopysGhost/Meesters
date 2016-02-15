@@ -106,4 +106,4 @@ def function_plot():
     return template.render(script=script, div=div)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
