@@ -1,8 +1,8 @@
-from flask import Flask
+from flask import Flask, redirect, render_template
 import jinja2
 from bokeh.embed import components
-from bokeh.plotting import figure, show, gridplot
-from bokeh.models import ColumnDataSource
+from bokeh.plotting import figure, show, gridplot, output_file
+from bokeh.models import ColumnDataSource, Slider
 import sympy as sp
 import numpy as np
 
@@ -34,7 +34,7 @@ source = ColumnDataSource(data=dict(x=x, y1=y1, y2=y2))
 # Interaction tools
 TOOLS = 'box_select, help, reset, resize'
 
-
+amp = Slider(start=0, end=3, step=0.1, value=2)
 # Figure plotting function
 def make_figure():
     top = figure(tools=TOOLS, width=600, height=400,
@@ -56,43 +56,12 @@ def make_figure():
     return plot
 
 
-# Creating Jinja2 HTML template
-template = jinja2.Template("""
-<!DOCTYPE html>
-<html lang="en-US">
-
-<link
-    href="http://cdn.pydata.org/bokeh/release/bokeh-0.11.1.min.css"
-    rel="stylesheet" type="text/css">
-
-<script
-    src="http://cdn.pydata.org/bokeh/release/bokeh-0.11.1.min.js"
-></script>
-
-<script type="text/javascript" async
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
-
-<body>
-
-    <h1>Function plot</h1>
-
-    <p> Below is plotted a function with its derivative </p>
-    <p> Data points can be selected by choosing the box select option in the toolbar </p>
-    <p> The Function is:\n
-        $$f(x) = x + 5sin(x)$$
-
-    {{ script|safe }}
-
-    {{ div|safe }}
-
-</body>
-
-</html>
-""")
 
 # Calling plotting Function
 p = make_figure()
+output_file('bokeh.html')
+
+text = 'Click me for plot'
 
 # Extracting HTML elements
 script, div = components(p)
@@ -103,7 +72,8 @@ app = Flask(__name__)
 
 @app.route('/')
 def function_plot():
-    return template.render(script=script, div=div)
+    return render_template('plot.html', script=script, div=div)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
