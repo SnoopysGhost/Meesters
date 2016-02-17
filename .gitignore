@@ -1,5 +1,6 @@
 *.docx
 *.pdf
-*.html
 *.json
 *.csv
+D3/
+Javascript/
