@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Plot</title>
+
+    <link
+    href="http://cdn.pydata.org/bokeh/release/bokeh-0.11.1.min.css"
+    rel="stylesheet" type="text/css">
+
+    <script
+    src="http://cdn.pydata.org/bokeh/release/bokeh-0.11.1.min.js"
+    ></script>
+
+    <script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+
+</head>
+<body>
+
+     <h1>Function plot</h1>
+
+    <p> Below is plotted a function with its derivative </p>
+    <p> Data points can be selected by choosing the box select option in the toolbar </p>
+    <p> The Function is:\n
+        $$f(x) = x + 5sin(x)$$
+    </p>
+
+    {{ script|safe }}
+
+    {{ div|safe }}
+
+</body>
+</html>
