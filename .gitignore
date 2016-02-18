@@ -2,5 +2,5 @@
 *.pdf
 *.json
 *.csv
-D3/
+*.tsv
 Javascript/
