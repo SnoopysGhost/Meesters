@@ -1,4 +1,7 @@
 from flask import Flask, render_template
+from flask.ext.wtf import Form
+from wtforms import IntegerField, SubmitField
+from wtforms.validators import Required
 from bokeh.embed import components
 from bokeh.plotting import figure, show, gridplot, output_file
 from bokeh.models import ColumnDataSource
@@ -7,12 +10,12 @@ import numpy as np
 
 
 # Defining default amplitude
-default_a = 5
+amp = 5
 
 
 # Defining numpy function
-def func(x, a=default_a):
-    return x + a * np.sin(x)
+def func(x, amp):
+    return x + amp * np.sin(x)
 
 # Defining sympy function for differentiation
 x, a = sp.symbols('x a')
@@ -24,8 +27,8 @@ f_prime = sp.lambdify((x, a), f_x_prime, modules='numpy')
 x = np.linspace(1, 10, 100)
 
 # Function values
-y1 = func(x)
-y2 = f_prime(x, default_a)
+y1 = func(x, amp)
+y2 = f_prime(x, amp)
 
 # Compiling data into dictionary for linked plotting
 source = ColumnDataSource(data=dict(x=x, y1=y1, y2=y2))
@@ -55,9 +58,9 @@ def make_figure():
     return plot
 
 
+
 # Calling plotting Function
 p = make_figure()
-output_file('bokeh.html')
 
 
 # Extracting HTML elements
