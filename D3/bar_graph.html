@@ -74,7 +74,15 @@
                     d3.select(this)
                         .transition()
                         .duration(300)
-                        .style('fill', 'red');
+                        .style('fill', 'red')
+
+
+                    d3.select('body')
+                            .append('p')
+                            .append('text')
+                            .attr('class', 'datapoint')
+                            .text('Data point:'+ d.value)
+
                 })
 
                 .on('mouseout', function(d){
@@ -82,6 +90,11 @@
                         .transition()
                         .duration(100)
                         .style('fill', 'steelblue')
+
+                    d3.select('.datapoint')
+                        .remove()
+
+
                 });
 
     });
