@@ -3,4 +3,5 @@
 *.json
 *.csv
 *.tsv
+d3*.js
 Javascript/
