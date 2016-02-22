@@ -32,7 +32,8 @@
             // creating drag object
             var drag = d3.behavior.drag()
                     .on('dragstart', function() {
-                        d3.event.sourceEvent.stopPropagation();})
+                        d3.event.sourceEvent.stopPropagation();
+                        d3.select(this).style('opacity', 0.7)})
                     .on('drag', function() {
                         var x = d3.event.x;
                         var y = d3.event.y;
@@ -45,7 +46,10 @@
                                     .attr('transform', 'translate('+x+','+y+')');
                         }
 
-                        });
+                        })
+                    .on('dragend', function(){
+                        d3.select(this).style('opacity', 1)
+                    });
 
 
             // appending circles based on data
