@@ -22,6 +22,19 @@
             width = 600 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom;
 
+        var svg = d3.select('body')
+                .append('svg')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                    .attr('transform', 'translate('+margin.left+','+margin.top+')');
+
+        svg.append('text')
+                .attr('x', width/2)
+                .attr('y', -margin.top/2)
+                .text("Cow's milk production Jan 1962 - Dec 1975")
+                .style('text-anchor', 'middle');
+
         var parseDate = d3.time.format("%Y-%m");
 
         var x = d3.time.scale().range([0, width]);
@@ -30,21 +43,31 @@
         var xAxis = d3.svg.axis().scale(x)
                 .orient('bottom');
 
+        svg.append("text") // text label for the x axis
+        .attr("x", width/2)
+        .attr("y", height+margin.bottom)
+        .style("text-anchor", "middle")
+        .text("Date");
+
 
         var yAxis = d3.svg.axis().scale(y)
                 .orient('left')
                 .ticks(5);
 
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -margin.left)
+            .attr("x",0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Value");
+
+
         var valueLine = d3.svg.line()
                 .x(function(d) {return x(d.date)})
                 .y(function(d) {return y(d.data)});
 
-        var svg = d3.select('body')
-                .append('svg')
-                    .attr('width', width + margin.left + margin.right)
-                    .attr('height', height + margin.top + margin.right)
-                .append('g')
-                    .attr('transform', 'translate('+margin.left+','+margin.top+')');
+
 
 
         d3.csv('milk_data.csv', function(error, data){
