@@ -72,7 +72,7 @@
                 .y(function(d) {return y(d.data)});
 
 
-        d3.csv('milk_data.csv', function(error, data){
+        d3.csv('../data/milk_data.csv', function(error, data){
             // parsing dates and data
             data.forEach(function(d){
                 d.date = parseDate.parse(d.date);
