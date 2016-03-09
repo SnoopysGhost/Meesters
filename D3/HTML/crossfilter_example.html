@@ -36,11 +36,13 @@
     data.forEach(function(d){
         d.date = parseDate(d.date);
         d.total = d.http_404 + d.http_200 + d.http_302;
+        d.Year = d.date.getFullYear();
 
     });
 
     var dateDim = ndx.dimension(function(d){return d.date});
-    var hits = dateDim.group().reduceSum(function(d){return d.total})
+    var hits = dateDim.group().reduceSum(function(d){return d.total});
+
 
     var minDate = dateDim.bottom(1)[0].date;
     var maxDate = dateDim.top(1)[0].date;
@@ -58,7 +60,23 @@
             .renderArea(true)
             .x(d3.time.scale().domain([minDate, maxDate]))
             .yAxisLabel("Hits")
-            .xAxisLabel("Date")
+            .xAxisLabel("Date");
+
+    d3.select('body')
+            .append('div')
+            .attr('class', 'yearChart');
+
+    var yearChart = dc.pieChart('.yearChart');
+
+    var yearDim = ndx.dimension(function(d){return +d.Year;}),
+        year_total = yearDim.group().reduceSum(function(d){return d.total;});
+
+
+    yearChart.width(200)
+            .height(200)
+            .dimension(yearDim)
+            .group(year_total)
+            .innerRadius(40);
 
     dc.renderAll();
 
