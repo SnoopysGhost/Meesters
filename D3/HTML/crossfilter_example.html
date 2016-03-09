@@ -56,7 +56,9 @@
             .dimension(dateDim)
             .group(hits)
             .renderArea(true)
-            .x(d3.time.scale().domain([minDate, maxDate]));
+            .x(d3.time.scale().domain([minDate, maxDate]))
+            .yAxisLabel("Hits")
+            .xAxisLabel("Date")
 
     dc.renderAll();
 
