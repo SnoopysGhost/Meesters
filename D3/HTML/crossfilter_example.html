@@ -29,7 +29,7 @@
 		{date: "01/07/2013", http_404: 1, http_200: 200, http_302: 100}
 		];
 
-    var ndx = crossfilter(data)
+    var ndx = crossfilter(data);
 
     var parseDate = d3.time.format("%m/%d/%Y").parse;
 
@@ -53,14 +53,22 @@
 
     var lineChart = dc.lineChart('.lineChart');
 
+    var status_200 = dateDim.group().reduceSum(function(d){return d.http_200; }),
+        status_302 = dateDim.group().reduceSum(function(d){return d.http_302; }),
+        status_404 = dateDim.group().reduceSum(function(d){return d.http_404; });
+
+
     lineChart.width(700)
             .height(400)
             .dimension(dateDim)
-            .group(hits)
+            .group(status_200, '200')
+            .stack(status_302, '302')
+            .stack(status_404, '404')
             .renderArea(true)
             .x(d3.time.scale().domain([minDate, maxDate]))
             .yAxisLabel("Hits")
-            .xAxisLabel("Date");
+            .xAxisLabel("Date")
+            .legend(dc.legend().x(50).y(10).itemHeight(13).gap(5));
 
     d3.select('body')
             .append('div')
@@ -68,15 +76,16 @@
 
     var yearChart = dc.pieChart('.yearChart');
 
-    var yearDim = ndx.dimension(function(d){return +d.Year;}),
-        year_total = yearDim.group().reduceSum(function(d){return d.total;});
+    var yearDim = ndx.dimension(function(d){return d.Year;}),
+        year_total = yearDim.group().reduceSum(function(d){return d.total});
 
 
     yearChart.width(200)
-            .height(200)
-            .dimension(yearDim)
-            .group(year_total)
-            .innerRadius(40);
+                .height(200)
+                .dimension(yearDim)
+                .group(year_total)
+                .innerRadius(40);
+
 
     dc.renderAll();
 
