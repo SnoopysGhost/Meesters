@@ -3,101 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>Histogram</title>
-    <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    <style type="text/css">
-        body { font: 12px Arial;}
-    path {
-    stroke: steelblue; stroke-width: 2; fill: none;
-    }
-    .axis path, .axis line {
-    fill: none;
-    stroke: grey;
-    stroke-width: 1; shape-rendering: crispEdges;
-    }
-    </style>
+    <script src="../Libraries/d3.min.js" charset="utf-8"></script>
+    <script src="../Libraries/crossfilter.min.js"></script>
+    <script src="../Libraries/dc.min.js"></script>
+
+    <link href="../CSS/dc.min.css" rel="stylesheet" type="text/css">
+
 </head>
 <body>
+    <div class="lineGraph"></div>
     <script type="text/javascript">
         // chart dimensions
         var margin = {top:30, right:20, bottom:30, left:50},
             width = 600 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom;
 
-        // Line graph element
-        var line_graph = d3.select('body')
-                .append('svg')
-                    .attr('width', width + margin.left + margin.right)
-                    .attr('height', height + margin.top + margin.bottom)
-                .append('g')
-                    .attr('transform', 'translate('+margin.left+','+margin.top+')');
-        // Chart title
-        line_graph.append('text')
-                .attr('x', width/2)
-                .attr('y', -margin.top/2)
-                .text("Cow's milk production Jan 1962 - Dec 1975")
-                .style('text-anchor', 'middle');
-
         // Date parser
-        var parseDate = d3.time.format("%Y-%m");
-
-        // x and y scale variables
-        var x = d3.time.scale().range([0, width]);
-        var y = d3.scale.linear().range([height, 0]);
-
-        var xAxis = d3.svg.axis().scale(x)
-                .orient('bottom');
-
-        line_graph.append("text") // text label for the x axis
-        .attr("x", width/2)
-        .attr("y", height+margin.bottom)
-        .style("text-anchor", "middle")
-        .text("Date");
-
-
-        var yAxis = d3.svg.axis().scale(y)
-                .orient('left')
-                .ticks(5);
-
-        line_graph.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", -margin.left)
-            .attr("x",0 - (height / 2))
-            .attr("dy", "1em")
-            .style("text-anchor", "middle")
-            .text("Value");
-
-        // line variable
-        var valueLine = d3.svg.line()
-                .x(function(d) {return x(d.date)})
-                .y(function(d) {return y(d.data)});
-
+        var parseDate = d3.time.format("%Y-%m").parse;
+        var lineGraph = dc.lineChart('.lineGraph');
 
         d3.csv('../data/milk_data.csv', function(error, data){
             // parsing dates and data
+            var ndx = crossfilter(data);
+
             data.forEach(function(d){
-                d.date = parseDate.parse(d.date);
+                d.date = parseDate(d.date);
                 d.data = +d.data;
+                d.year = d.date.getFullYear();
             });
 
-            // Setting x and y domain
-            x.domain(d3.extent(data, function(d){return d.date}));
-            y.domain([400, d3.max(data, function(d){return d.data})]);
 
-            // Adding line to chart
-            line_graph.append('path')
-                    .attr('class', 'line')
-                    .attr('d', valueLine(data));
+            var dateDim = ndx.dimension(function(d){return d.date});
+            var milkProd = dateDim.group().reduceSum(function(d){return d.data});
 
-            // adding x axis
-            line_graph.append('g')
-                    .attr('class', 'x axis')
-                    .attr('transform', 'translate(0,'+height+')')
-                    .call(xAxis);
+            var minDate = dateDim.bottom(1)[0].date;
+            var maxDate = dateDim.top(1)[0].date;
 
-            // adding y axis
-            line_graph.append('g')
-                    .attr('class', 'y axis')
-                    .call(yAxis);
+            lineGraph.width(width)
+                    .height(height)
+                    .dimension(dateDim)
+                    .group(milkProd)
+                    .x(d3.time.scale().domain([minDate, maxDate]));
+
+
+
+            dc.renderAll()
+
 
         })
 
