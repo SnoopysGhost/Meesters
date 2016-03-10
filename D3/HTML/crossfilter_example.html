@@ -9,9 +9,25 @@
     <script src="../Libraries/dc.min.js"></script>
     <link rel="stylesheet" href="../CSS/dc.min.css" type="text/css" media="screen">
 
+    <style>
+        .typeChart {
+            padding-left: 0.5em;
+        }
+
+        .dashboard{
+            width: 800px;
+            height: 700px;
+            padding-left: 0.5em;
+        }
+    </style>
+
 </head>
 <body>
-
+<div class="dashboard">
+    <div class="lineChart"></div>
+    <div class="yearChart"></div>
+    <div class="typeChart"></div>
+</div>
 <script type="text/javascript">
     var data = [
 	{"status":"http_302","hits":0,"date":"01/03/2013"},
@@ -64,10 +80,6 @@
      * Line Graph
      ***/
 
-    d3.select('body')
-            .append('div')
-            .attr('class', 'lineChart');
-
     var lineChart = dc.lineChart('.lineChart');
     var dateDim = ndx.dimension(function(d){return d.date});
     var hits = dateDim.group().reduceSum(function(d){return d.hits});
@@ -91,15 +103,12 @@
             .x(d3.time.scale().domain([minDate, maxDate]))
             .yAxisLabel("Hits")
             .xAxisLabel("Date")
-            .legend(dc.legend().x(50).y(10).itemHeight(13).gap(5));
+            .legend(dc.legend().x(50).y(10).itemHeight(13).gap(5))
+            .ordinalColors(["#56B2EA","#E064CD","#F8B700","#78CC00","#7B71C5"]);
 
     /**
      * Year Graph
      */
-
-    d3.select('body')
-            .append('div')
-            .attr('class', 'yearChart');
 
     var yearChart = dc.pieChart('.yearChart');
     var yearDim = ndx.dimension(function(d){return d.Year;}),
@@ -110,14 +119,13 @@
                 .height(200)
                 .dimension(yearDim)
                 .group(year_total)
-                .innerRadius(40);
+                .innerRadius(60)
+                .legend(dc.legend().x(80).y(80).itemHeight(13).gap(5))
+                .renderLabel(false);
 
     /**
      * Type Graph
      */
-    d3.select('body')
-            .append('div')
-            .attr('class', 'typeChart');
 
     var typeChart = dc.pieChart('.typeChart');
     var typeDim = ndx.dimension(function(d){return d.status})
@@ -127,7 +135,10 @@
             .height(200)
             .dimension(typeDim)
             .group(hit_type)
-            .innerRadius(40);
+            .innerRadius(60)
+            .ordinalColors(["#56B2EA","#E064CD","#F8B700","#78CC00","#7B71C5"])
+            .legend(dc.legend().x(80).y(70).itemHeight(13).gap(5))
+            .renderLabel(false);
 
 
     dc.renderAll();
