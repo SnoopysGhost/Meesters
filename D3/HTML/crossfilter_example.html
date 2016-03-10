@@ -40,120 +40,82 @@
     <div class="typeChart"></div>
 </div>
 <script type="text/javascript">
-    var data = [
-	{"status":"http_302","hits":0,"date":"01/03/2013"},
-	{"status":"http_200","hits":90,"date":"01/03/2013"},
-	{"status":"http_200","hits":200,"date":"01/07/2013"},
-	{"status":"http_302","hits":1,"date":"01/06/2013"},
-	{"status":"http_200","hits":200,"date":"01/06/2013"},
-	{"status":"http_404","hits":4,"date":"01/06/2013"},
-	{"status":"http_302","hits":0,"date":"01/05/2013"},
-	{"status":"http_200","hits":90,"date":"01/05/2013"},
-	{"status":"http_404","hits":4,"date":"01/05/2013"},
-	{"status":"http_302","hits":0,"date":"01/04/2013"},
-	{"status":"http_200","hits":90,"date":"01/04/2013"},
-	{"status":"http_404","hits":2,"date":"01/04/2013"},
-	{"status":"http_302","hits":100,"date":"01/07/2013"},
-	{"status":"http_404","hits":1,"date":"01/07/2013"},
-	{"status":"http_404","hits":2,"date":"01/03/2013"},
-	{"status":"http_302","hits":1,"date":"01/02/2013"},
-	{"status":"http_200","hits":10,"date":"01/02/2013"},
-	{"status":"http_404","hits":1,"date":"01/02/2013"},
-	{"status":"http_302","hits":0,"date":"01/01/2013"},
-	{"status":"http_200","hits":90,"date":"01/01/2013"},
-	{"status":"http_404","hits":2,"date":"01/01/2013"},
-	{"status":"http_302","hits":0,"date":"12/31/2012"},
-	{"status":"http_200","hits":90,"date":"12/31/2012"},
-	{"status":"http_302","hits":100,"date":"12/27/2012"},
-	{"status":"http_404","hits":2,"date":"12/27/2012"},
-	{"status":"http_200","hits":90,"date":"12/30/2012"},
-	{"status":"http_404","hits":2,"date":"12/30/2012"},
-	{"status":"http_302","hits":200,"date":"12/29/2012"},
-	{"status":"http_200","hits":300,"date":"12/29/2012"},
-	{"status":"http_404","hits":3,"date":"12/29/2012"},
-	{"status":"http_302","hits":100,"date":"12/28/2012"},
-	{"status":"http_200","hits":10,"date":"12/28/2012"},
-	{"status":"http_404","hits":6,"date":"12/28/2012"},
-	{"status":"http_200","hits":190,"date":"12/27/2012"},
-	{"status":"http_404","hits":2,"date":"12/31/2012"},
-	{"status":"http_302","hits":0,"date":"12/30/2012"}
-];
+    d3.json('../Data/crossfilter.json', function(error, data){
+        var ndx = crossfilter(data);
+        var parseDate = d3.time.format("%m/%d/%Y").parse;
 
-    var ndx = crossfilter(data);
-    var parseDate = d3.time.format("%m/%d/%Y").parse;
+        data.forEach(function(d){
+            d.date = parseDate(d.date);
+            d.Year = d.date.getFullYear();
 
-    data.forEach(function(d){
-        d.date = parseDate(d.date);
-        d.Year = d.date.getFullYear();
+        });
+        /***
+         * Line Graph
+         ***/
 
-    });
-    /***
-     * Line Graph
-     ***/
-
-    var lineChart = dc.lineChart('.lineChart');
-    var dateDim = ndx.dimension(function(d){return d.date});
-    var hits = dateDim.group().reduceSum(function(d){return d.hits});
+        var lineChart = dc.lineChart('.lineChart');
+        var dateDim = ndx.dimension(function(d){return d.date});
+        var hits = dateDim.group().reduceSum(function(d){return d.hits});
 
 
-    var minDate = dateDim.bottom(1)[0].date;
-    var maxDate = dateDim.top(1)[0].date;
+        var minDate = dateDim.bottom(1)[0].date;
+        var maxDate = dateDim.top(1)[0].date;
 
-    var status_200=dateDim.group().reduceSum(function(d) {if (d.status==='http_200') {return d.hits;}else{return 0;}});
-    var status_302=dateDim.group().reduceSum(function(d) {if (d.status==='http_302') {return d.hits;}else{return 0;}});
-    var status_404=dateDim.group().reduceSum(function(d) {if (d.status==='http_404') {return d.hits;}else{return 0;}});
-
-
-    lineChart.width(700)
-            .height(400)
-            .dimension(dateDim)
-            .group(status_200, '200')
-            .stack(status_302, '302')
-            .stack(status_404, '404')
-            .renderArea(true)
-            .x(d3.time.scale().domain([minDate, maxDate]))
-            .yAxisLabel("Hits")
-            .xAxisLabel("Date")
-            .legend(dc.legend().x(50).y(10).itemHeight(13).gap(5))
-            .ordinalColors(["#56B2EA","#E064CD","#F8B700","#78CC00","#7B71C5"]);
-
-    /**
-     * Year Graph
-     */
-
-    var yearChart = dc.pieChart('.yearChart');
-    var yearDim = ndx.dimension(function(d){return d.Year;}),
-        year_total = yearDim.group().reduceSum(function(d){return d.hits});
+        var status_200=dateDim.group().reduceSum(function(d) {if (d.status==='http_200') {return d.hits;}else{return 0;}});
+        var status_302=dateDim.group().reduceSum(function(d) {if (d.status==='http_302') {return d.hits;}else{return 0;}});
+        var status_404=dateDim.group().reduceSum(function(d) {if (d.status==='http_404') {return d.hits;}else{return 0;}});
 
 
-    yearChart.width(200)
+        lineChart.width(700)
+                .height(400)
+                .dimension(dateDim)
+                .group(status_200, '200')
+                .stack(status_302, '302')
+                .stack(status_404, '404')
+                .renderArea(true)
+                .x(d3.time.scale().domain([minDate, maxDate]))
+                .yAxisLabel("Hits")
+                .xAxisLabel("Date")
+                .legend(dc.legend().x(50).y(10).itemHeight(13).gap(5))
+                .ordinalColors(["#56B2EA","#E064CD","#F8B700","#78CC00","#7B71C5"]);
+
+        /**
+         * Year Graph
+         */
+
+        var yearChart = dc.pieChart('.yearChart');
+        var yearDim = ndx.dimension(function(d){return d.Year;}),
+            year_total = yearDim.group().reduceSum(function(d){return d.hits});
+
+
+        yearChart.width(200)
+                    .height(200)
+                    .dimension(yearDim)
+                    .group(year_total)
+                    .innerRadius(60)
+                    .legend(dc.legend().x(80).y(80).itemHeight(13).gap(5))
+                    .renderLabel(false);
+
+        /**
+         * Type Graph
+         */
+
+        var typeChart = dc.pieChart('.typeChart');
+        var typeDim = ndx.dimension(function(d){return d.status})
+        var hit_type = typeDim.group().reduceSum(function(d){return d.hits});
+
+        typeChart.width(200)
                 .height(200)
-                .dimension(yearDim)
-                .group(year_total)
+                .dimension(typeDim)
+                .group(hit_type)
                 .innerRadius(60)
-                .legend(dc.legend().x(80).y(80).itemHeight(13).gap(5))
+                .ordinalColors(["#56B2EA","#E064CD","#F8B700","#78CC00","#7B71C5"])
+                .legend(dc.legend().x(80).y(70).itemHeight(13).gap(5))
                 .renderLabel(false);
 
-    /**
-     * Type Graph
-     */
 
-    var typeChart = dc.pieChart('.typeChart');
-    var typeDim = ndx.dimension(function(d){return d.status})
-    var hit_type = typeDim.group().reduceSum(function(d){return d.hits});
-
-    typeChart.width(200)
-            .height(200)
-            .dimension(typeDim)
-            .group(hit_type)
-            .innerRadius(60)
-            .ordinalColors(["#56B2EA","#E064CD","#F8B700","#78CC00","#7B71C5"])
-            .legend(dc.legend().x(80).y(70).itemHeight(13).gap(5))
-            .renderLabel(false);
-
-
-    dc.renderAll();
-
+        dc.renderAll();
+    })
 </script>
 
 </body>
