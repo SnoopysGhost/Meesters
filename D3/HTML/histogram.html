@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>histogram</title>
+     <script src="../Libraries/jquery-1.12.1.min.js" type="text/javascript"></script>
+     <script src="../Libraries/d3.min.js" charset="utf-8"></script>
+    <script src='../Libraries/crossfilter.min.js' type="text/javascript"></script>
+    <script src="../Libraries/dc.min.js"></script>
+    <link rel="stylesheet" href="../CSS/dc.min.css" type="text/css" media="screen">
+</head>
+<body>
+    <div class="histogram"></div>
+    <div class="histo2"></div>
+    <script>
+        var barGraph = dc.barChart('.histogram');
+        var lineGraph = dc.lineChart('.histo2')
+
+        d3.json('../Data/histogram.json', function(error, data){
+
+
+            data.forEach(function(d){
+                d.Spent = +d.Spent;
+                d.Year = +d.Year;
+            });
+            var ndx = crossfilter(data);
+
+            var yearDim = ndx.dimension(function(d){return d.Year});
+            var nameDim = ndx.dimension(function(d){return d.name});
+            var spendDim = ndx.dimension(function(d){return d.Spent});
+            var spendperYear = yearDim.group().reduceSum(function(d){return d.Spent});
+            var spendperName = nameDim.group().reduceSum(function(d){return d.Spent});
+            var spendHist = spendDim.group().reduceCount();
+
+            barGraph.width(700)
+                    .height(400)
+                    .dimension(spendDim)
+                    .group(spendHist)
+                    .x(d3.scale.linear().domain([0, 100]));
+
+
+            lineGraph.width(700)
+                    .height(400)
+                    .dimension(yearDim)
+                    .group(spendperYear)
+                    .x(d3.scale.linear().domain([2011, 2013]))
+                    .xAxis().tickFormat(function(d){return d})
+                    .ticks(2);
+            dc.renderAll()
+
+        })
+    </script>
+</body>
+</html>
