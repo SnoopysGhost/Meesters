@@ -101,7 +101,7 @@
          */
 
         var typeChart = dc.pieChart('.typeChart');
-        var typeDim = ndx.dimension(function(d){return d.status})
+        var typeDim = ndx.dimension(function(d){return d.status});
         var hit_type = typeDim.group().reduceSum(function(d){return d.hits});
 
         typeChart.width(200)
