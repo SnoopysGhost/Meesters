@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="CSS/bar_graph.css">
+    <link rel="stylesheet" type="text/css" href="../CSS/bar_graph.css">
 
 
     <svg class="chart"></svg>
@@ -34,7 +34,7 @@
             .orient('left')
             .ticks(10, 'years')
 
-    d3.tsv("data_file.tsv", type, function(error, data) {
+    d3.tsv("../data/data_file.tsv", type, function(error, data) {
 
         y.domain([0, d3.max(data, function(d) { return d.value; })]);
         x.domain(data.map(function(d){return d.name;}));

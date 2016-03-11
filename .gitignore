@@ -1,7 +1,2 @@
-*.docx
-*.pdf
-*.json
-*.csv
-*.tsv
-d3*.js
-Javascript/
+Data/
+.idea/

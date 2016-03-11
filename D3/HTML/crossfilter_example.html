@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Linked filtering</title>
+    <script src="../Libraries/jquery-1.12.1.min.js" type="text/javascript"></script>
+     <script src="../Libraries/d3.min.js" charset="utf-8"></script>
+    <script src='../Libraries/crossfilter.min.js' type="text/javascript"></script>
+    <script src="../Libraries/dc.min.js"></script>
+    <link rel="stylesheet" href="../CSS/dc.min.css" type="text/css" media="screen">
+
+    <style>
+        .typeChart {
+            padding-left: 0.5em;
+        }
+
+        .dashboard{
+            width: 800px;
+            height: 700px;
+            padding-left: 0.5em;
+        }
+        body{
+            font-family: "Times New Roman", Sans-Serif;
+        }
+    </style>
+
+</head>
+<body>
+<h2>Crossfilter Example</h2>
+<p>
+    The data represents server hits to a server. The data can be filtered by either using brush selection on the
+    line graph or selecting a section on one of the pie charts.
+</p>
+<p>
+    The example makes use of the dc.js library which is a combination of the d3.js and crossfilter.js libraries.
+</p>
+<div class="dashboard">
+    <div class="lineChart"></div>
+    <div class="yearChart"></div>
+    <div class="typeChart"></div>
+</div>
+<script type="text/javascript">
+    d3.json('../Data/crossfilter.json', function(error, data){
+        var ndx = crossfilter(data);
+        var parseDate = d3.time.format("%m/%d/%Y").parse;
+
+        data.forEach(function(d){
+            d.date = parseDate(d.date);
+            d.Year = d.date.getFullYear();
+
+        });
+        /***
+         * Line Graph
+         ***/
+
+        var lineChart = dc.lineChart('.lineChart');
+        var dateDim = ndx.dimension(function(d){return d.date});
+        var hits = dateDim.group().reduceSum(function(d){return d.hits});
+
+
+        var minDate = dateDim.bottom(1)[0].date;
+        var maxDate = dateDim.top(1)[0].date;
+
+        var status_200=dateDim.group().reduceSum(function(d) {if (d.status==='http_200') {return d.hits;}else{return 0;}});
+        var status_302=dateDim.group().reduceSum(function(d) {if (d.status==='http_302') {return d.hits;}else{return 0;}});
+        var status_404=dateDim.group().reduceSum(function(d) {if (d.status==='http_404') {return d.hits;}else{return 0;}});
+
+
+        lineChart.width(700)
+                .height(400)
+                .dimension(dateDim)
+                .group(status_200, '200')
+                .stack(status_302, '302')
+                .stack(status_404, '404')
+                .renderArea(true)
+                .x(d3.time.scale().domain([minDate, maxDate]))
+                .yAxisLabel("Hits")
+                .xAxisLabel("Date")
+                .legend(dc.legend().x(50).y(10).itemHeight(13).gap(5))
+                .ordinalColors(["#56B2EA","#E064CD","#F8B700","#78CC00","#7B71C5"]);
+
+        /**
+         * Year Graph
+         */
+
+        var yearChart = dc.pieChart('.yearChart');
+        var yearDim = ndx.dimension(function(d){return d.Year;}),
+            year_total = yearDim.group().reduceSum(function(d){return d.hits});
+
+
+        yearChart.width(200)
+                    .height(200)
+                    .dimension(yearDim)
+                    .group(year_total)
+                    .innerRadius(60)
+                    .legend(dc.legend().x(80).y(80).itemHeight(13).gap(5))
+                    .renderLabel(false);
+
+        /**
+         * Type Graph
+         */
+
+        var typeChart = dc.pieChart('.typeChart');
+        var typeDim = ndx.dimension(function(d){return d.status});
+        var hit_type = typeDim.group().reduceSum(function(d){return d.hits});
+
+        typeChart.width(200)
+                .height(200)
+                .dimension(typeDim)
+                .group(hit_type)
+                .innerRadius(60)
+                .ordinalColors(["#56B2EA","#E064CD","#F8B700","#78CC00","#7B71C5"])
+                .legend(dc.legend().x(80).y(70).itemHeight(13).gap(5))
+                .renderLabel(false);
+
+
+        dc.renderAll();
+    })
+</script>
+
+</body>
+</html>

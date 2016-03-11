@@ -28,7 +28,7 @@
 
 
         // reading data file
-        d3.csv('circle_data.csv', function(error, data){
+        d3.csv('../data/circle_data.csv', function(error, data){
             // creating drag object
             var drag = d3.behavior.drag()
                     .on('dragstart', function() {

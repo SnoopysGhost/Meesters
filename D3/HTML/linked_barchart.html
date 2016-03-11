@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Linked Bar Chart</title>
+
+    <script src="../Libraries/d3.min.js" charset="utf-8"></script>
+    <script src="../Libraries/crossfilter.min.js"></script>
+    <script src="../Libraries/dc.min.js"></script>
+
+    <link href="../CSS/dc.min.css" rel="stylesheet" type="text/css">
+
+    <style>
+        .dashboard{
+            padding-left: 0.9em;
+        }
+
+    </style>
+
+</head>
+<body>
+    <h2>Linked Barchart example</h2>
+    <p> The following example is used to illustrate how a line graph can be filtered by using a
+    bar graph. This example uses the D3, Crossfilter and DC javascript libaries.</p>
+
+    <p>The data for this example can be found <a
+            href="https://datamarket.com/data/set/22ox/monthly-milk-production-pounds-per-cow-jan-62-dec-75#!ds=22ox&display=line">
+        Here
+    </a>
+
+    </p>
+    <div class="dashboard">
+        <div class="lineGraph"></div>
+        <div class="barGraph"></div>
+    </div>
+    <script type="text/javascript">
+        // chart dimensions
+        var margin = {top:30, right:20, bottom:30, left:100},
+            width = 600 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
+
+        // Date parser
+        var parseDate = d3.time.format("%Y-%m").parse;
+
+        // Graph objects
+        var lineGraph = dc.lineChart('.lineGraph');
+        var barGraph = dc.barChart('.barGraph');
+
+        // Loading data
+        d3.csv('../data/milk_data.csv', function(error, data){
+            // parsing dates and data
+            data.forEach(function(d){
+                d.date = parseDate(d.date);
+                d.data = +d.data;
+                d.year = d.date.getFullYear();
+            });
+            // Crossfilter object
+            var ndx = crossfilter(data);
+
+            // Dimensional objects
+            var yearDim = ndx.dimension(function(d){return d.year});
+            var dateDim = ndx.dimension(function(d){return d.date});
+
+            // data objects
+            var milkProdMonth = dateDim.group().reduceSum(function(d){return d.data});
+            var milkProdYear = yearDim.group().reduceSum(function(d){return d.data});
+
+            // Initial axis domains
+            var minDate = dateDim.bottom(1)[0].date;
+            var maxDate = dateDim.top(1)[0].date;
+            var minYear = yearDim.bottom(1)[0].year;
+            var maxYear = yearDim.top(1)[0].year;
+
+            // barGraph creation
+            barGraph.width(width)
+                    .height(height)
+                    .margins({top: 30, right:30, bottom:40, left:40})
+                    .dimension(yearDim)
+                    .group(milkProdYear)
+                    .yAxisLabel('Pounds per Year')
+                    .xAxisLabel('Date')
+                    .x(d3.scale.linear().domain([minYear, maxYear]))
+                    .xAxis().tickFormat(function(d){return d});
+
+            barGraph.yAxis().tickFormat(function(d){return d});
+            barGraph.elasticY(true);
+
+            // lineGraph creation
+            lineGraph.width(width)
+                    .height(height)
+                    .margins({top: 30, right:30, bottom:40, left:40})
+                    .dimension(dateDim)
+                    .group(milkProdMonth)
+                    .yAxisLabel('Pounds per Month')
+                    .xAxisLabel('Date')
+                    .x(d3.time.scale().domain([minDate, maxDate]));
+
+            lineGraph.elasticY(true);
+
+            // Chart rendering
+            dc.renderAll();
+
+            // lineGraph x-axis update listener
+            barGraph.on('filtered', function(){
+                var minDate2 = dateDim.bottom(1)[0].date;
+                var maxDate2 = dateDim.top(1)[0].date;
+                console.log(minDate2, maxDate2);
+                lineGraph.x(d3.time.scale().domain([minDate2, maxDate2]));
+                lineGraph.redraw();
+
+            });
+
+        })
+
+    </script>
+</body>
+</html>
