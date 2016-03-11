@@ -9,43 +9,72 @@
 
     <link href="../CSS/dc.min.css" rel="stylesheet" type="text/css">
 
+    <style>
+        .dashboard{
+            padding-left: 0.9em;
+        }
+
+    </style>
+
 </head>
 <body>
-    <div class="lineGraph"></div>
+    <div class="dashboard">
+        <div class="lineGraph"></div>
+        <div class="barGraph"></div>
+    </div>
     <script type="text/javascript">
         // chart dimensions
-        var margin = {top:30, right:20, bottom:30, left:50},
+        var margin = {top:30, right:20, bottom:30, left:100},
             width = 600 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom;
 
         // Date parser
         var parseDate = d3.time.format("%Y-%m").parse;
+        var parseDate2 = d3.time.format("%Y").parse;
         var lineGraph = dc.lineChart('.lineGraph');
+        var barGraph = dc.barChart('.barGraph');
 
         d3.csv('../data/milk_data.csv', function(error, data){
             // parsing dates and data
-            var ndx = crossfilter(data);
-
             data.forEach(function(d){
                 d.date = parseDate(d.date);
                 d.data = +d.data;
                 d.year = d.date.getFullYear();
             });
 
-
+            var ndx = crossfilter(data);
+            var yearDim = ndx.dimension(function(d){return d.year});
             var dateDim = ndx.dimension(function(d){return d.date});
+
             var milkProd = dateDim.group().reduceSum(function(d){return d.data});
+            var milkProdYear = yearDim.group().reduceSum(function(d){return d.data});
 
             var minDate = dateDim.bottom(1)[0].date;
             var maxDate = dateDim.top(1)[0].date;
+            var minYear = yearDim.bottom(1)[0].year;
+            var maxYear = yearDim.top(1)[0].year;
+
+            barGraph.width(width)
+                    .height(height)
+                    .margins({top: 30, right:30, bottom:40, left:40})
+                    .dimension(yearDim)
+                    .group(milkProdYear)
+                    .yAxisLabel('Pounds per Year')
+                    .xAxisLabel('Date')
+                    .x(d3.scale.linear().domain([minYear, maxYear]))
+                    .xAxis().tickFormat(function(d){return d});
+
+            barGraph.yAxis().tickFormat(function(d){return d});
 
             lineGraph.width(width)
                     .height(height)
+                    .margins({top: 30, right:30, bottom:40, left:40})
                     .dimension(dateDim)
                     .group(milkProd)
-                    .x(d3.time.scale().domain([minDate, maxDate]));
-
-
+                    .yAxisLabel('Pounds per Month')
+                    .xAxisLabel('Date')
+                    .x(d3.time.scale().domain([minDate, maxDate]))
+                    .elasticX(true);
 
             dc.renderAll()
 
