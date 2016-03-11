@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Linked Bar Chart</title>
+    <script src="../Libraries/jquery-1.12.1.min.js"></script>
     <script src="../Libraries/d3.min.js" charset="utf-8"></script>
     <script src="../Libraries/crossfilter.min.js"></script>
     <script src="../Libraries/dc.min.js"></script>
@@ -75,6 +76,7 @@
                     .xAxis().tickFormat(function(d){return d});
 
             barGraph.yAxis().tickFormat(function(d){return d});
+            barGraph.elasticY(true);
 
             lineGraph.width(width)
                     .height(height)
@@ -83,13 +85,26 @@
                     .group(milkProd)
                     .yAxisLabel('Pounds per Month')
                     .xAxisLabel('Date')
-                    .x(d3.time.scale().domain([minDate, maxDate]))
-                    .elasticX(true);
+                    .x(d3.time.scale().domain([minDate, maxDate]));
 
-            dc.renderAll()
+            lineGraph.elasticY(true);
 
+
+            dc.renderAll();
+
+
+            barGraph.on('filtered', function(){
+                var minDate2 = dateDim.bottom(1)[0].date;
+                var maxDate2 = dateDim.top(1)[0].date;
+                console.log(minDate2, maxDate2);
+                lineGraph.x(d3.time.scale().domain([minDate2, maxDate2]));
+                lineGraph.redraw();
+
+            });
 
         })
+
+
 
     </script>
 </body>
